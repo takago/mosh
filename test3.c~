@@ -1,0 +1,162 @@
+#include <ncurses.h>
+#include <locale.h>	// setlocale() マルチバイト表示用
+#include <ctype.h>
+#include <libgen.h> // basename 必須う
+#include <signal.h> 
+#include <pthread.h>
+#define PROWS 100
+
+#define PCOL 0 // PIDの始まりのカラム
+#define UCOL 6 // USRの始まりのカラム
+#define ICOL 14 // ITカウント表示の始まりのカラム
+#define CCOL 29 // カウント表示の始まりのカラム
+#define SCOL 36 // ストロークの始まりのカラム
+
+
+#define N PROWS 
+
+int xx,yy; // メインスクリーンの大きさ
+int px=0,py=0;   // パッド内のカーソル座標
+int poy=0,pox=0; // パッド画面の切り出しの左上座標
+
+WINDOW* setup()
+{
+  	setlocale(LC_ALL, "");	// setlocale() マルチバイト表示用
+	initscr();
+    clear();
+#if 0
+    raw();  // 割り込みも無視
+#else
+	cbreak();
+#endif  
+    nodelay(stdscr, TRUE);	// ノンブロックモード
+	keypad(stdscr, TRUE);   // キーパッド有効化（カーソルキーなどが使えるようになる)
+    curs_set(0); // カーソルOFF
+    
+	start_color();
+	init_pair(1, COLOR_WHITE, COLOR_BLUE);	
+	init_pair(2, COLOR_BLUE, COLOR_WHITE);	
+
+
+    bkgd(COLOR_PAIR(1)); // 背景色を設定
+    getmaxyx(stdscr,yy,xx); // 標準スクリーンのサイズを取得   
+    mvprintw(0,0,"Monitorized Shell Server [TAKAGO Lab. 2016]");
+    mvprintw(1, 0, "%5s %-8s%-15s[%4s] %s","X_PID", "USER","CLI_IP_ADDR","CNT","KEYSTROKE");
+    /*
+      パッドの作成(大きさを自由に決められる画面    
+    */
+
+    WINDOW *pad=newpad(PROWS,xx);
+    wbkgd(pad,COLOR_PAIR(2)); // パッドの背景色を設定
+	printw("AAAA\n");	
+    int m;
+    for(m=0;m<PROWS;m++)
+        mvwprintw(pad,  m,0, "---");
+    wmove(pad,0,0);    
+    refresh();
+
+    return pad;    
+}
+
+void highlight(int ene, WINDOW *w, int y)
+{
+    char str[1024];
+    wmove(w,y,0);    
+
+    if(ene){        // 色設定を反転
+        wattrset(w,COLOR_PAIR(2)| A_REVERSE);        
+    }
+    
+    winnstr(w,str,xx);            // カーソルのところの文字列を読み取り，
+    mvwprintw(w,y,0,"%s",str);     // 再描画 
+    wattrset(w,COLOR_PAIR(2)); // 色設定を元に戻す
+}
+
+
+// パッド内カーソルの移動（必要に応じてパッド画面をスクロール）
+void next_line()
+{    
+    py++;
+    if(PROWS-1<py)
+        py=PROWS-1;            
+    if(poy-3+(yy-yy/4)<py)
+        poy++;
+    if(PROWS+3-yy<poy) // パッド画面の下になったら固定
+        poy=PROWS+3-yy;
+}
+
+// パッド内カーソルの移動（必要に応じてパッド画面をスクロール）
+void pre_line()
+{
+    py--;
+    if(py<0)
+        py=0;
+    if(poy+(yy/4)>py)
+        poy--;
+    if(py<poy)
+        poy=0;
+}
+
+void *list(){
+    int c=0;
+    int a[10];
+    int n=0;
+    int count=0;
+
+    a[2]=3;    
+
+    WINDOW *pad=setup(); // スクリーンにパッドを貼り付ける
+
+/*for(n=0;n<N;n++){
+        x[n]=SCOL;
+        }*/
+    while(1){
+
+        prefresh(pad, poy, pox, 2, 0, yy-2, xx); // パッド（座標[pox,poy]）を，標準スクリーンに貼り付ける
+        if(n%2==0){
+            count++;
+            //printw("%d\n",n);
+            mvwprintw(pad,count,0,"%d\n",n);
+        }
+        if((c = getch()) == KEY_F(1))
+            break;
+        highlight(0, pad,py);        
+        switch (c) {
+        case KEY_DOWN: // "↓"が押されたら，現在行を移動
+            next_line();
+
+            break;            
+        case KEY_UP:  // "↑"が押されたら，現在行を移動
+            pre_line();
+
+            break;
+        default:
+            break;
+        }
+        highlight(1, pad,py);
+        n++;  
+    }
+    return NULL;
+}
+
+int main(int argc, char *argv[]){
+
+    void *list();
+    pthread_t th1;
+    int n=0;
+
+    while(1){
+        printf("%d\n",n);
+        if(n%5==0){
+            printf("%d\n",n);
+            pthread_create(&th1,NULL,list,NULL);
+            pthread_join(th1,NULL);	
+        }else if(n==60){
+            break;
+        }
+        n++;
+    }
+
+    return 0;
+
+}
