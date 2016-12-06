@@ -1,4 +1,4 @@
-x/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * 
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * 
  *  
  *                       Copyright 2015 Daisuke TAKAGO
  *                   takago@neptune.kanazawa-it.ac.jp

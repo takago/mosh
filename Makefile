@@ -7,7 +7,9 @@ all:
 
 	gcc -o mosh mosh.o common.o client.o server.o -lpthread -lncursesw
 
-killsrv:
-	killall xterm mosh
+install:
+	cp mosh /usr/local/bin
+	chown root /usr/local/bin/mosh
+
 clean:
 	rm -fr mosh *.o ./a.out
