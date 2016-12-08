@@ -1,7 +1,6 @@
 [Desktop Entry]
-Name=mosh
-Comment=mosh client
-Exec=roxterm -e mosh-tui
+Name=Monitorized Shell Client
+Exec=roxterm -T mosh -e mosh-tui
 Icon=roxterm
 Terminal=false
 Type=Application
