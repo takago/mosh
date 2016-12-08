@@ -51,10 +51,10 @@ struct termios tios0;			// 端末設定(復元用)
 
 void sigterm_handler1(int signum)
 {
-    tcflush(STDIN_FILENO, TCIFLUSH);
-    tcsetattr(STDIN_FILENO,TCSANOW,  &tios0);	// 端末設定を復元
-    printf("(o_o) Bye!!\n");
-    exit(0);
+	tcflush(STDIN_FILENO, TCIFLUSH);
+	tcsetattr(STDIN_FILENO, TCSANOW, &tios0);	// 端末設定を復元
+	printf("(o_o) Bye!!\n");
+	exit(0);
 }
 
 /* ターミナル設定 */
@@ -68,17 +68,18 @@ void SetTerminal1()
 	t.c_cc[VMIN] = 1;
 	tcflush(STDIN_FILENO, TCIFLUSH);
 	tcsetattr(STDIN_FILENO, TCSANOW, &t);
-    }
+}
 
 
 #endif
 
 
-struct info{
-	int ene; // 0:未使用，1:使用中
-    char ip_addr[100];
-    char usr_str[100];
-    pid_t x_pid;
+struct info
+{
+	int ene;					// 0:未使用，1:使用中
+	char ip_addr[100];
+	char usr_str[100];
+	pid_t x_pid;
 	char m_name[100];
 };
 

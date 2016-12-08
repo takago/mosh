@@ -1,8 +1,8 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * 
  *  
- *                       Copyright 2015 Daisuke TAKAGO
- *                   takago@neptune.kanazawa-it.ac.jp
- *
+ *                       Copyright 2015 TAKAGO_LAB.
+ *                   Daisuke Takago(takago@neptune.kanazawa-it.ac.jp)
+ *                   Yuuki Horie(b1334513@planet.kanazwa-it.ac.jp)
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *
  *  This file is part of  "MOSH"
@@ -26,10 +26,9 @@
 #include <termios.h>
 #include "common.h"
 
-struct termios tios0; // 端末設定(復元用)
+struct termios tios0;			// 端末設定(復元用)
 
 #define MAXDATA 65536
 
 
 int client(int srv_port, char *srv_ip, char *usr_str);
-
