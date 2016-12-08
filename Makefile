@@ -8,8 +8,9 @@ all:
 	gcc -o mosh mosh.o common.o client.o server.o -lpthread -lncursesw
 
 install:
-	cp mosh /usr/local/bin
-	chown root /usr/local/bin/mosh
+	cp mosh mosh-tui /usr/local/bin
+	chown root /usr/local/bin/mosh /usr/local/bin/mosh-tui
+	cp mosh.desktop /usr/local/share/applications/
 
 clean:
 	rm -fr mosh *.o ./a.out

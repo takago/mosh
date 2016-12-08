@@ -1,0 +1,32 @@
+#! /bin/bash
+
+# 必要に応じて書き換える
+SRVIP=127.0.0.1
+PORTNO=12345
+CLASSID=3EP5-99
+
+##########################################
+# ここから下は触らない
+
+# 端末サイズ変更
+echo -ne '\e[8;24;80t' 
+ 
+dialog --backtitle "TAKAGO LAB." --title "Moniterized Shell Client Starter" \
+       --form "\n下記項目を入力して下さい．" 15 45 4 \
+       "MoshサーバのIPアドレス:" 1 1 "$SRVIP" 1 25 25 30 \
+       "    　　　　ポート番号:" 2 1 "$PORTNO" 2 25 25 30 \
+       "クラス-名列番号:" 3 1 "$CLASSID" 3 25 25 30 \
+2>/tmp/form.$$
+ 
+# 取り出し
+SRVIP=`sed -n 1p /tmp/form.$$`
+PORTNO=`sed -n 2p /tmp/form.$$`
+CLASSID=`sed -n 3p /tmp/form.$$`
+ 
+# 起動
+if  [ -e ./mosh ]
+then
+    ./mosh -c -h $SRVIP -p $PORTNO -u $CLASSID
+else
+    mosh -c -h $SRVIP -p $PORTNO -u $CLASSID
+fi
