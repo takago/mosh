@@ -10,6 +10,7 @@ all:
 install:
 	cp mosh mosh-tui /usr/local/bin
 	chown root /usr/local/bin/mosh /usr/local/bin/mosh-tui
+	mkdir -p /usr/local/share/applications/
 	cp mosh.desktop /usr/local/share/applications/
 
 clean:
