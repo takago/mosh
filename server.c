@@ -138,23 +138,6 @@ void pre_line()
 		poy = 0;
 }
 
-void Set_XTerm(int fd)			// 新規に立ち上げるxtermの設定に使う
-{
-	struct termios t;
-	tcgetattr(STDIN_FILENO, &t);
-	// エコーバック無効，非カノニカルモード，シグナル無視
-	t.c_lflag &= ~(ECHO | ICANON | ISIG);	// 不安定ｔなときは，ISIGを解除して実験すること
-
-	/////////////// これがないとうまくxtermが改行されない////////
-	t.c_iflag &= ~ICRNL;
-	////////////////////////////////////////////////////////////
-
-	t.c_cc[VTIME] = 0;
-	t.c_cc[VMIN] = 1;
-	tcflush(fd, TCIFLUSH);
-	tcsetattr(fd, TCSANOW, &t);
-}
-
 struct sockaddr_in clntAddr;
 struct info st_inf[200];
 
@@ -180,14 +163,11 @@ void *srv_th(void *csc1)
 	sfd = open(ptsname(mfd), O_RDWR);
 
 	strcpy(st_inf[csc].m_name, ptsname(mfd));
-	Set_XTerm(sfd);
-
-
-
+	SetTerminal(sfd); // これを実行しないとXterm起動時に変な数字が表示される
 
 	char title_str[256];
 	// 6
-	sprintf(title_str, "Monitorized Shell %s -->  %s:%d", ptsname(mfd),
+	sprintf(title_str, "mosh %s@%s:%d",  st_inf[csc].usr_str,
 			inet_ntoa(clntAddr.sin_addr), ntohs(clntAddr.sin_port));
 	int n;
 	pid_t pid;
@@ -206,9 +186,12 @@ void *srv_th(void *csc1)
 
 		close(sfd);
 		// xterm -fa Inconsolata -fd IPAGothic:style=Regular -fs 16
-		execlp("xterm", "xterm",
-			   "-fa", "Inconsolata",
-			   "-fd", "IPAGothic:style=Regular",
+		execlp("xterm", "xterm", "-iconic",
+			   "-xrm","xterm*allowTitleOps: false",
+			   "-xrm","xterm*allowFontOps: true",
+			   "-xrm","xterm*allowWindowOps: true",
+			   "-fa", "Inconsolata", "-bg","white", "-fg","black",
+			   "-fd", "IPAGothic:style=Regular","-b","10",
 			   "-fs", "16", "-n", title_str, "-T", title_str, buf, NULL);
 		printf("(x_x)\n");
 		exit(1);
@@ -216,7 +199,6 @@ void *srv_th(void *csc1)
 
 	st_inf[csc].x_pid = pid;
 	close(mfd);
-
 
 
 	while (1) {
@@ -349,7 +331,11 @@ int server(int port)
 
 	ssocket(port, "0.0.0.0");
 	socklen_t len = sizeof(struct sockaddr_in);
-	bind(ssc, (struct sockaddr *)&saddr, len);
+	if( bind(ssc, (struct sockaddr *)&saddr, len) < 0 ){		
+		printf("サーバがすでに起動しています\n");
+		exit(1);		
+	}
+	
 	listen(ssc, 200);
 
 	puts(COPYRIGHT_MSG);

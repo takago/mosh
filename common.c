@@ -51,18 +51,18 @@ void sigterm_handler(int signum)
 
 /* ターミナル設定 */
 
-void SetTerminal()
+void SetTerminal(int fd)
 {
 	struct termios t;
-	tcgetattr(STDIN_FILENO, &t);
+	tcgetattr( STDIN_FILENO, &t);
 	// エコーバック無効，非カノニカルモード，シグナル無視
-	//  t.c_lflag &= ~(ECHO|ICANON|ISIG);
+	t.c_lflag &= ~(ECHO|ICANON|ISIG);
 	t.c_lflag &= ~(ECHO | ICANON);
-	t.c_iflag &= ~ICRNL;
+	t.c_iflag &= ~ICRNL; /// これがないとうまくxtermが改行されない
 	t.c_cc[VTIME] = 0;
 	t.c_cc[VMIN] = 1;
-	tcflush(STDIN_FILENO, TCIFLUSH);
-	tcsetattr(STDIN_FILENO, TCSANOW, &t);
+	tcflush( fd, TCIFLUSH);
+	tcsetattr( fd, TCSANOW, &t);
 }
 
 void init()
@@ -70,7 +70,7 @@ void init()
 	signal(SIGTERM, sigterm_handler);
 	signal(SIGINT, sigterm_handler);
 	tcgetattr(STDIN_FILENO, &tios0);	// 現在の設定を退避
-	SetTerminal();
+	SetTerminal(0);
 }
 
 void ssocket(int port, char *ip_str)

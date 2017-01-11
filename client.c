@@ -44,6 +44,7 @@
 #include "common.h"
 #include "client.h"
 
+
 int client(int srv_port, char *srv_ip, char *usr_str)
 {
 
@@ -58,17 +59,22 @@ int client(int srv_port, char *srv_ip, char *usr_str)
 	// ユーザの使用シェル
 	char usr_shell[100];
 
-	puts(COPYRIGHT_MSG);
 
+	
+	puts(COPYRIGHT_MSG);
+	
 	if (usr_str == NULL)
 		usr_str = "John Doe";
 
 //擬似端末の確保
 	mfd = open("/dev/ptmx", O_RDWR);	// 擬似端末オープン（マスタ側）
 //      printf("Open New Psudo Terminal: %s\r\n",ptsname(mfd));
+
+
 	grantpt(mfd);	//スレーブ擬似端末へのアクセス許可
 	unlockpt(mfd);	//擬似端末マスタ、スレーブのペアロック解除
-
+	SetTerminal(0); // 端末の設定
+	
 
 	if (0 == fork()) {	// シェルを起動する．
 		strcpy(usr_shell, getenv("SHELL"));
@@ -77,7 +83,7 @@ int client(int srv_port, char *srv_ip, char *usr_str)
 		sfd = open(ptsname(mfd), O_RDWR);	// 擬似端末オープン（スレーブ側  ptsname()--スレーブ擬似端末の名前取得
 		close(mfd);
 		setsid();
-//          ioctl(sfd, TIOCSCTTY, 0); // 効果不明
+		ioctl(sfd, TIOCSCTTY, 0); // 必須：これがないとサーバでC-cをタイプしても，クライアントに送られないようだ．また，クライントでシェルを起動しようとしたときに，「端末プロセスグループを設定できません」などといわれる．
 
 		dup2(sfd, 0);
 		dup2(sfd, 1);
