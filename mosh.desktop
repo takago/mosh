@@ -1,7 +1,7 @@
 [Desktop Entry]
 Name=Monitorized Shell Client
-Exec=roxterm -T mosh -e mosh-tui
-Icon=roxterm
+Exec=mate-terminal --hide-menubar -t "mosh client" mosh -e mosh-tui
+Icon=terminal
 Terminal=false
 Type=Application
 StartupNotify=false

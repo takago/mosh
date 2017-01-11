@@ -1,1 +1,1 @@
-sudo apt-get install roxterm xterm fonts-inconsolata fonts-ipafont libncursesw5-dev dialog  roxterm
+sudo apt-get install xterm fonts-inconsolata fonts-ipafont libncursesw5-dev dialog
