@@ -40,39 +40,7 @@
 #include <signal.h>
 
 #define MAXDATA 65536
-/*#define PORT 54321*/
-
 struct termios tios0;			// 端末設定(復元用)
-
-
-/* -s ポート番号 */
-
-#if 0
-
-void sigterm_handler1(int signum)
-{
-	tcflush(STDIN_FILENO, TCIFLUSH);
-	tcsetattr(STDIN_FILENO, TCSANOW, &tios0);	// 端末設定を復元
-	printf("(o_o) Bye!!\n");
-	exit(0);
-}
-
-/* ターミナル設定 */
-void SetTerminal1()
-{
-	struct termios t;
-	tcgetattr(STDIN_FILENO, &t);
-	// エコーバック無効，非カノニカルモード，シグナル無視
-	t.c_lflag &= ~(ECHO | ICANON | ISIG);
-	t.c_cc[VTIME] = 0;
-	t.c_cc[VMIN] = 1;
-	tcflush(STDIN_FILENO, TCIFLUSH);
-	tcsetattr(STDIN_FILENO, TCSANOW, &t);
-}
-
-
-#endif
-
 
 struct info
 {
