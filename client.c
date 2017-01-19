@@ -22,7 +22,7 @@
  *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-
+#define _BSD_SOURCE     // usleep()に必要
 #define _XOPEN_SOURCE	// これが無いとptsname()がSEGVを起こす
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -124,13 +124,16 @@ int client(int srv_port, char *srv_ip, char *usr_str)
 	fcntl(ssc, F_SETFL, O_NONBLOCK);
 	fcntl(mfd, F_SETFL, O_NONBLOCK);
 
-
+    struct timeval tv; //重要： selectでタイムアウトを設定しておかないと，まれにブロックしたままになる
 	while (1) {
+        tv.tv_sec = 0;
+        tv.tv_usec = 500*1000; // 500ms
+        
 		FD_ZERO(&rfds);
 		FD_SET(0, &rfds);	// 標準入力を監視
 		FD_SET(ssc, &rfds);	// ソケットを監視
 		FD_SET(mfd, &rfds);	// マスタ端末を監視
-		select(100, &rfds, NULL, NULL, NULL);
+		select(100, &rfds, NULL, NULL, &tv);
 		if (FD_ISSET(0, &rfds)) {
 			rsize = read(0, buf, MAXDATA);
 			if (rsize <= 0) {
@@ -150,8 +153,27 @@ int client(int srv_port, char *srv_ip, char *usr_str)
 			if (rsize <= 0) {
 				break;
 			}
-			send(ssc, buf, rsize, MSG_NOSIGNAL);
-			write(1, buf, rsize);	// 画面に表示           
+#if 0
+            // どかーんと送信（ネットワークに負荷がかかる）
+            rsize=send(ssc, buf, rsize, MSG_NOSIGNAL);
+            write(1, buf, rsize);	// 画面に表示 
+#else
+            // ネットワークに負荷をかけないようにゆっくりと転送
+            int offset=0;
+            int len;
+#define DELAY_MS (10)
+#define FRAMESIZE 1024
+            while(0<rsize){ // 送信速度を調整してサーバがパンクするのを防ぐ
+                usleep(DELAY_MS*1000); // 10msごとに1024バイト
+                if(FRAMESIZE<rsize)
+                    len=send(ssc, buf+offset, FRAMESIZE, MSG_NOSIGNAL);
+                else
+                    len=send(ssc, buf+offset, rsize, MSG_NOSIGNAL);
+                write(1, buf+offset, len);	// 画面に表示           
+                offset+=len;
+                rsize-=len;                
+            }
+#endif
 		}
 	}
   err:

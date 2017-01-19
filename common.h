@@ -25,7 +25,7 @@
 #ifndef _COMMON
 #   define _COMMON
 #   define SOFTWARE_NAME "MOSH"
-#   define SOFTWARE_VERSION  "2.1(20170112)"
+#   define SOFTWARE_VERSION  "2.2(20170120)"
 #   define COPYRIGHT_MSG SOFTWARE_NAME " " SOFTWARE_VERSION "\nCopyright (C) 2015 Daisuke Takago(takago@neptune.kanazawa-it.ac.jp)\n                   Yuuki Horie(b1334513@planet.kanazwa-it.ac.jp)"
 
 struct sockaddr_in saddr;

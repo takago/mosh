@@ -190,8 +190,9 @@ void *srv_th(void *csc1)
 			   "-xrm","xterm*allowTitleOps: false",
 			   "-xrm","xterm*allowFontOps: true",
 			   "-xrm","xterm*allowWindowOps: true",
-			   "-fa", "Inconsolata", "-bg","white", "-fg","black",
-			   "-fd", "IPAGothic:style=Regular","-b","10",
+               "-xrm","xterm*initialFont: 2", 
+			   "-fa", "Inconsolata", "-bg","lightgray", "-fg","black",
+			   "-fd", "Noto Sans CJK JP Light",
 			   "-fs", "16", "-n", title_str, "-T", title_str, buf, NULL);
 		printf("(x_x)\n");
 		exit(1);
@@ -199,21 +200,23 @@ void *srv_th(void *csc1)
 
 	st_inf[csc].x_pid = pid;
 	close(mfd);
-
-
+    
+    struct timeval tv; //重要： selectでタイムアウトを設定しておかないと，まれにブロックしたままになる
 	while (1) {
+        tv.tv_sec = 0;
+        tv.tv_usec = 500*1000; // 500ms
+        
 		FD_ZERO(&rfds);
 		FD_SET(csc, &rfds);
 		FD_SET(sfd, &rfds);
 
-		select(100, &rfds, NULL, NULL, NULL);
+		select(100, &rfds, NULL, NULL, &tv);
 		if (FD_ISSET(sfd, &rfds)) {
 			rsize = read(sfd, buf, MAXDATA);	// キー入力を送信
 			if (rsize <= 0) {
 				break;
 			}
-			send(csc, buf, rsize, MSG_NOSIGNAL);
-
+            send(csc, buf, rsize, MSG_NOSIGNAL);
 		}
 		if (FD_ISSET(csc, &rfds)) {
 			rsize = recv(csc, buf, MAXDATA, MSG_NOSIGNAL);
